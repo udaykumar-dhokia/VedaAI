@@ -7,6 +7,7 @@ export interface IAdmin extends Document {
   role: string;
   createdAt: Date;
   updatedAt: Date;
+  school: string;
 }
 
 const admin = new mongoose.Schema<IAdmin>(
@@ -36,6 +37,10 @@ const admin = new mongoose.Schema<IAdmin>(
     role: {
       type: String,
       required: [true, "role is required"],
+    },
+    school: {
+      type: String,
+      required: [true, "School is required"],
     },
   },
   {
