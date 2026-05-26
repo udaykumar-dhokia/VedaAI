@@ -15,6 +15,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import axiosClient from "@/lib/api";
+import { useDispatch } from "react-redux";
+import { setAdmin } from "@/store/slices/admin.slice";
 
 const MotionButton = motion(Button);
 
@@ -24,6 +26,7 @@ const Page = () => {
   const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -39,7 +42,7 @@ const Page = () => {
       };
       const response = await axiosClient.post("/auth/login", payload);
 
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      dispatch(setAdmin(response.data.user));
       toast.success("Welcome back to VedaAI!");
       router.push("/dashboard");
     } catch (e: any) {
