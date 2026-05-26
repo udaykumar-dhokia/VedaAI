@@ -3,7 +3,7 @@
 import { RootState } from "@/store/store";
 import { useSelector } from "react-redux";
 
-const page = () => {
+const Page = () => {
   const { user } = useSelector((state: RootState) => state.admin);
   return (
     <div>
@@ -12,4 +12,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

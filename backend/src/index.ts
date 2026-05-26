@@ -6,8 +6,10 @@ import "dotenv/config";
 import { log } from "console";
 import { StatusCodes } from "http-status-codes";
 import connectDB from "./config/db.config";
+
 import authRoutes from "./features/auth/auth.routes";
 import adminRoutes from "./features/admin/admin.routes";
+import assignmentRoutes from "./features/assignment/assignment.routes";
 
 const PORT = process.env.PORT || 3333;
 
@@ -18,18 +20,17 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5555",
     credentials: true,
-  }),
+  })
 );
 app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/assignments", assignmentRoutes);
 
 app.get("/", (_, res: Response) => {
-  return res
-    .status(StatusCodes.OK)
-    .json({ message: "Server is up and running..." });
+  return res.status(StatusCodes.OK).json({ message: "Server is up and running..." });
 });
 
 server.listen(PORT, () => {

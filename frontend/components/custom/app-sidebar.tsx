@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import {
   SparkleIcon,
   SquaresFourIcon,
@@ -41,7 +42,13 @@ export function AppSidebar(props: SidebarProps) {
         <SidebarMenu className="flex flex-col gap-8">
           <SidebarMenuItem>
             <div className="flex items-center justify-start gap-2 mt-4 ms-2">
-              <img src="/logo.svg" alt="VedaAI Logo" className="w-10 h-10" />
+              <Image
+                src="/logo.svg"
+                alt="VedaAI Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10"
+              />
               <h1 className="font-bold text-2xl">VedaAI</h1>
             </div>
           </SidebarMenuItem>
@@ -66,7 +73,7 @@ export function AppSidebar(props: SidebarProps) {
                         "py-6 px-4 rounded-xl text-base text-muted-foreground transition-colors",
                         item.isActive
                           ? "font-semibold"
-                          : "font-medium text-muted-foreground hover:text-slate-900",
+                          : "font-medium text-muted-foreground hover:text-slate-900"
                       )}
                     >
                       <Icon size={22} />
@@ -85,7 +92,7 @@ export function AppSidebar(props: SidebarProps) {
             <SidebarMenuButton
               className={cn(
                 "py-6 px-4 rounded-xl text-base text-muted-foreground transition-colors mb-3",
-                "font-medium text-muted-foreground hover:text-slate-900",
+                "font-medium text-muted-foreground hover:text-slate-900"
               )}
             >
               <GearIcon size={22} />
@@ -94,7 +101,13 @@ export function AppSidebar(props: SidebarProps) {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <div className="flex items-center justify-center py-4 gap-3 px-2 bg-veda-back rounded-xl">
-              <img src="/avatar.png" alt="" className="w-15 shrink-0" />
+              <Image
+                src="/avatar.png"
+                alt="Avatar"
+                width={60}
+                height={60}
+                className="w-15 shrink-0"
+              />
               <div className="min-w-0">
                 <h1 className="font-bold text-md truncate">{props.school}</h1>
                 <p className="text-muted-foreground text-sm">{props.name}</p>

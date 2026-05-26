@@ -6,14 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CaretRightIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  SpinnerIcon,
-} from "@phosphor-icons/react";
+import { CaretRightIcon, EyeIcon, EyeSlashIcon, SpinnerIcon } from "@phosphor-icons/react";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import Image from "next/image";
 import axiosClient from "@/lib/api";
 import { useDispatch } from "react-redux";
 import { setAdmin } from "@/store/slices/admin.slice";
@@ -45,7 +41,7 @@ const Page = () => {
       dispatch(setAdmin(response.data.user));
       toast.success("Welcome back to VedaAI!");
       router.push("/dashboard");
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.log(e);
       const errorMessage = "Invalid credentials. Please try again.";
       toast.error(errorMessage);
@@ -59,12 +55,11 @@ const Page = () => {
       <div className="border p-4 bg-veda-back rounded-xl flex flex-col gap-4 max-w-md shadow-xs">
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-start gap-2">
-            <img src="/logo.svg" alt="VedaAI Logo" className="w-10 h-10" />
+            <Image src="/logo.svg" alt="VedaAI Logo" width={40} height={40} className="w-10 h-10" />
             <h1 className="font-bold text-2xl">VedaAI</h1>
           </div>
           <p className="text-muted-foreground">
-            An AI academic system for assessment, teaching, <br /> and
-            personalised learning.
+            An AI academic system for assessment, teaching, <br /> and personalised learning.
           </p>
         </div>
         <div className="flex flex-col gap-2">
@@ -94,11 +89,7 @@ const Page = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer flex items-center justify-center"
               >
-                {showPassword ? (
-                  <EyeSlashIcon size={18} />
-                ) : (
-                  <EyeIcon size={18} />
-                )}
+                {showPassword ? <EyeSlashIcon size={18} /> : <EyeIcon size={18} />}
               </button>
             </div>
           </div>
@@ -145,10 +136,7 @@ const Page = () => {
         <Separator />
 
         <div className="text-muted-foreground space-y-1 text-sm">
-          <p>
-            This is the demo version of VedaAI. Please use below given
-            credentials to try.
-          </p>
+          <p>This is the demo version of VedaAI. Please use below given credentials to try.</p>
           <ul>
             <li>- Email: admin@admin.com</li>
             <li>- Password: admin123</li>

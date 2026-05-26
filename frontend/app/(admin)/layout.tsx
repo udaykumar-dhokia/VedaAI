@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { SpinnerIcon } from "@phosphor-icons/react";
+import Image from "next/image";
 import axiosClient from "@/lib/api";
 import { RootState } from "@/store/store";
 import { setAdmin, clearAdmin } from "@/store/slices/admin.slice";
@@ -14,9 +15,7 @@ import { AppSidebar } from "@/components/custom/app-sidebar";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isAuthenticated, isLoading, user } = useSelector(
-    (state: RootState) => state.admin,
-  );
+  const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.admin);
 
   useEffect(() => {
     const getAdmin = async () => {
@@ -25,7 +24,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           const response = await axiosClient.get("/admin");
           dispatch(setAdmin(response.data.user));
         }, 5000);
-      } catch (e) {
+      } catch {
         dispatch(clearAdmin());
         router.push("/");
       }
@@ -38,7 +37,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return (
       <div className="h-screen w-screen flex flex-col justify-center items-center text-black gap-4">
         <motion.div>
-          <img src="/logo.svg" alt="VedaAI Logo" className="w-16 h-16" />
+          <Image src="/logo.svg" alt="VedaAI Logo" width={64} height={64} className="w-16 h-16" />
         </motion.div>
         <div className="flex items-center gap-2 text-slate-400 font-medium">
           <SpinnerIcon className="animate-spin" size={20} />
@@ -55,7 +54,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <SidebarProvider>
-        <AppSidebar name={user?.name!} school={user?.school!} />
+        <AppSidebar name={user?.name || ""} school={user?.school || ""} />
         <main className="bg-veda-back">{children}</main>
       </SidebarProvider>
     </>

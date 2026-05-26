@@ -29,9 +29,7 @@ const AuthController = {
   login: async (req: Request, res: Response): Promise<Response> => {
     const body: LoginReqParams = req.body;
     if (!body || !body.email || !body.password) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: ReasonPhrases.BAD_REQUEST });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: ReasonPhrases.BAD_REQUEST });
     }
 
     try {
@@ -39,27 +37,18 @@ const AuthController = {
         email: body.email.toLowerCase(),
       }).select("+password");
       if (!user) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: ReasonPhrases.NOT_FOUND });
+        return res.status(StatusCodes.NOT_FOUND).json({ message: ReasonPhrases.NOT_FOUND });
       }
 
-      const isPasswordMatch = await bcrypt.compare(
-        body.password,
-        user.password!,
-      );
+      const isPasswordMatch = await bcrypt.compare(body.password, user.password!);
 
       if (!isPasswordMatch) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .json({ message: ReasonPhrases.NOT_FOUND });
+        return res.status(StatusCodes.NOT_FOUND).json({ message: ReasonPhrases.NOT_FOUND });
       }
 
-      const token = jwt.sign(
-        { id: user._id, email: user.email },
-        process.env.JWT_SECRET!,
-        { expiresIn: "1d" },
-      );
+      const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET!, {
+        expiresIn: "1d",
+      });
 
       const userObj = user.toObject();
       delete userObj.password;

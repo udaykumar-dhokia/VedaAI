@@ -14,16 +14,11 @@ const AdminController = {
    * @param {Response} res - Response object used to send HTTP results.
    * @returns {Promise<Response>} Response containing the admin user or an error.
    */
-  getAdmin: async (
-    req: AuthenticatedRequest,
-    res: Response,
-  ): Promise<Response> => {
+  getAdmin: async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
     try {
       const user = req.user;
       if (!user) {
-        return res
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: ReasonPhrases.UNAUTHORIZED });
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: ReasonPhrases.UNAUTHORIZED });
       }
 
       return res.status(StatusCodes.OK).json({ user });

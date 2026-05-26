@@ -22,12 +22,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn(
-        "h-full",
-        "antialiased",
-        "font-sans",
-        bricolageGrotesque.variable,
-      )}
+      className={cn("h-full", "antialiased", "font-sans", bricolageGrotesque.variable)}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
