@@ -1,65 +1,159 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  CaretRightIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  SpinnerIcon,
+} from "@phosphor-icons/react";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import axiosClient from "@/lib/api";
+
+const MotionButton = motion(Button);
+
+const Page = () => {
+  const router = useRouter();
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Please fill the required details.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const payload = {
+        email: email,
+        password: password,
+      };
+      const response = await axiosClient.post("/auth/login", payload);
+
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      toast.success("Welcome back to VedaAI!");
+      router.push("/dashboard");
+    } catch (e: any) {
+      console.log(e);
+      const errorMessage = "Invalid credentials. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="h-screen flex flex-col justify-center items-center">
+      <div className="border p-4 bg-veda-back rounded-xl flex flex-col gap-4 max-w-md shadow-xs">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-start gap-2">
+            <img src="/logo.svg" alt="VedaAI Logo" className="w-10 h-10" />
+            <h1 className="font-bold text-2xl">VedaAI</h1>
+          </div>
+          <p className="text-muted-foreground">
+            An AI academic system for assessment, teaching, <br /> and
+            personalised learning.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-xl font-bold mb-1">Teacher Login</h1>
+          <div className="space-y-1">
+            <Label>Email</Label>
+            <Input
+              type="email"
+              placeholder="admin@admin.com"
+              value={email}
+              className="bg-white min-w-2xs"
+              onChange={(e) => setEmail(e.target.value)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+          <div className="space-y-1">
+            <Label>Password</Label>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="admin123"
+                value={password}
+                className="bg-white min-w-2xs pr-10"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer flex items-center justify-center"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon size={18} />
+                ) : (
+                  <EyeIcon size={18} />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </main>
+        <div className="w-full">
+          <MotionButton
+            disabled={!email || !password || isLoading}
+            onClick={handleLogin}
+            whileHover="hover"
+            initial="initial"
+            className="w-full rounded-full py-5 flex items-center justify-center gap-1.5"
+          >
+            {isLoading ? (
+              <SpinnerIcon className="animate-spin" size={18} />
+            ) : (
+              <>
+                <p>Continue</p>
+                <div className="relative overflow-hidden w-4 h-4 flex items-center justify-center">
+                  <motion.div
+                    className="absolute"
+                    variants={{
+                      initial: { x: 0 },
+                      hover: { x: 20 },
+                    }}
+                    transition={{ type: "spring", stiffness: 250, damping: 25 }}
+                  >
+                    <CaretRightIcon weight="fill" />
+                  </motion.div>
+                  <motion.div
+                    className="absolute"
+                    variants={{
+                      initial: { x: -20 },
+                      hover: { x: 0 },
+                    }}
+                    transition={{ type: "spring", stiffness: 250, damping: 25 }}
+                  >
+                    <CaretRightIcon weight="fill" />
+                  </motion.div>
+                </div>
+              </>
+            )}
+          </MotionButton>
+        </div>
+        <Separator />
+
+        <div className="text-muted-foreground space-y-1 text-sm">
+          <p>
+            This is the demo version of VedaAI. Please use below given
+            credentials to try.
+          </p>
+          <ul>
+            <li>- Email: admin@admin.com</li>
+            <li>- Password: admin123</li>
+          </ul>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Page;
