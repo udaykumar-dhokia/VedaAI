@@ -46,6 +46,9 @@ export class AssignmentService {
   async generateAssignment(params: {
     teacherId: string;
     title: string;
+    subject?: string;
+    studentClass?: string;
+    school?: string;
     dueDate?: string;
     questionConfigs: {
       type: QuestionType;
@@ -124,9 +127,19 @@ Only return the raw JSON object. Do not include any other conversational text or
       generatedTitle = parsed.title || params.title;
     }
 
+    const totalMarks = generatedSections.reduce(
+      (acc, sec) =>
+        acc + sec.questions.reduce((qAcc: number, q: { marks: number }) => qAcc + q.marks, 0),
+      0
+    );
+
     const assignment = new Assignment({
       teacher: params.teacherId,
       title: generatedTitle,
+      subject: params.subject,
+      class: params.studentClass,
+      school: params.school,
+      totalMarks,
       dueDate: params.dueDate ? new Date(params.dueDate) : undefined,
       questionConfigs: params.questionConfigs,
       additionalInstructions: params.additionalInstructions,

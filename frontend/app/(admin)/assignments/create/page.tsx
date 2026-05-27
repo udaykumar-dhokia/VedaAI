@@ -45,6 +45,8 @@ export default function CreateAssignmentPage() {
 
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
+  const [subject, setSubject] = useState("");
+  const [studentClass, setStudentClass] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,8 +87,8 @@ export default function CreateAssignmentPage() {
   );
 
   const handleNextToStep2 = () => {
-    if (!title.trim()) {
-      toast.error("Please enter a title for the assignment.");
+    if (!title.trim() || !subject.trim() || !studentClass.trim()) {
+      toast.error("Please enter a title, subject, and class for the assignment.");
       return;
     }
     if (questionConfigs.length === 0) {
@@ -105,6 +107,8 @@ export default function CreateAssignmentPage() {
       setIsSubmitting(true);
       const payload = {
         title,
+        subject,
+        class: studentClass,
         dueDate: dueDate ? dueDate.toISOString() : undefined,
         additionalInstructions,
         questionConfigs: questionConfigs.map(({ type, numberQuestions, marksPerQuestion }) => ({
@@ -146,6 +150,27 @@ export default function CreateAssignmentPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-semibold mb-2 block">Subject</Label>
+              <Input
+                placeholder="Enter subject (e.g. English)"
+                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-1 focus-visible:ring-veda shadow-none"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-semibold mb-2 block">Class</Label>
+              <Input
+                placeholder="Enter class (e.g. 5th, 8th)"
+                className="h-11 rounded-xl bg-gray-50 border-gray-200 focus-visible:ring-1 focus-visible:ring-veda shadow-none"
+                value={studentClass}
+                onChange={(e) => setStudentClass(e.target.value)}
+              />
+            </div>
           </div>
 
           <div>
@@ -339,6 +364,17 @@ export default function CreateAssignmentPage() {
               <div>
                 <span className="text-muted-foreground block mb-1">Title</span>
                 <span className="font-medium text-base">{title}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-muted-foreground block mb-1">Subject</span>
+                  <span className="font-medium text-base">{subject}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Class</span>
+                  <span className="font-medium text-base">{studentClass}</span>
+                </div>
               </div>
 
               <div>

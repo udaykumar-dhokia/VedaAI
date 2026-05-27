@@ -33,6 +33,7 @@
     "deepagents": "^1.10.2",
     "dotenv": "^17.4.2",
     "http-status-codes": "^2.3.0",
+    "ioredis": "^5.11.0",
     "jsonwebtoken": "^9.0.3",
     "langchain": "^1.4.2",
     "mongoose": "^9.6.2",

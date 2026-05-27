@@ -62,7 +62,25 @@ export function AssignmentCard({ assignment, index, onView, onDelete }: Assignme
         </DropdownMenu>
       </div>
 
-      <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
+      <div className="mt-4 mb-2 flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+        {assignment.subject && (
+          <span className="bg-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-600">
+            {assignment.subject}
+          </span>
+        )}
+        {assignment.class && (
+          <span className="bg-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-600">
+            Class {assignment.class}
+          </span>
+        )}
+        {assignment.totalMarks !== undefined && (
+          <span className="bg-gray-100 px-2 py-1 rounded-md text-xs font-medium text-gray-600">
+            {assignment.totalMarks} Marks
+          </span>
+        )}
+      </div>
+
+      <div className="mt-2 flex flex-col md:flex-row md:items-center justify-between text-sm text-muted-foreground gap-2">
         <span>
           <span className="font-medium text-foreground/70">Assigned on</span> :{" "}
           {formatDate(assignment.createdAt)}

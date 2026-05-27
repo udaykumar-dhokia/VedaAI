@@ -23,10 +23,20 @@ const AssignmentController = {
         return res.status(StatusCodes.UNAUTHORIZED).json({ message: ReasonPhrases.UNAUTHORIZED });
       }
 
-      const { title, dueDate, questionConfigs, additionalInstructions, referenceText } = req.body;
+      const {
+        title,
+        subject,
+        class: studentClass,
+        dueDate,
+        questionConfigs,
+        additionalInstructions,
+        referenceText,
+      } = req.body;
 
       if (
         !title ||
+        !subject ||
+        !studentClass ||
         !questionConfigs ||
         !Array.isArray(questionConfigs) ||
         questionConfigs.length === 0
@@ -38,7 +48,10 @@ const AssignmentController = {
 
       const assignment = await assignmentService.generateAssignment({
         teacherId: user._id.toString(),
+        school: user.school,
         title,
+        subject,
+        studentClass,
         dueDate,
         questionConfigs,
         additionalInstructions,

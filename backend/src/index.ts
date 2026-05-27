@@ -6,6 +6,7 @@ import "dotenv/config";
 import { log } from "console";
 import { StatusCodes } from "http-status-codes";
 import connectDB from "./config/db.config";
+import "./config/redis.config";
 
 import authRoutes from "./features/auth/auth.routes";
 import adminRoutes from "./features/admin/admin.routes";

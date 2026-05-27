@@ -29,6 +29,11 @@ export interface IQuestionTypeConfig {
 export interface IAssignment extends Document {
   teacher: mongoose.Types.ObjectId;
   title: string;
+  subject?: string;
+  class?: string;
+  school?: string;
+  totalMarks?: number;
+  timeAllowed?: string;
   dueDate?: Date;
   questionConfigs: IQuestionTypeConfig[];
   additionalInstructions?: string;
@@ -76,6 +81,11 @@ const assignmentSchema = new Schema<IAssignment>(
       required: true,
     },
     title: { type: String, required: true },
+    subject: { type: String },
+    class: { type: String },
+    school: { type: String },
+    totalMarks: { type: Number },
+    timeAllowed: { type: String },
     dueDate: { type: Date },
     questionConfigs: {
       type: [questionTypeConfigSchema],
