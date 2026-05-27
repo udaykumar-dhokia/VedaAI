@@ -2,12 +2,14 @@
   "name": "veda-ai-root",
   "private": true,
   "scripts": {
+    "dev": "concurrently -n \"frontend,backend\" -c \"blue,green\" \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
     "prepare": "husky",
     "lint": "npm run lint --prefix frontend && prettier --check .",
     "format": "prettier --write .",
     "lint-staged": "lint-staged"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "husky": "^9.0.11",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3"

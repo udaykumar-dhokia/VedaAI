@@ -114,6 +114,41 @@ const AssignmentController = {
         .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
     }
   },
+
+  /**
+   * Delete an assignment by ID for the authenticated teacher.
+   *
+   * Ensures only the owner teacher can remove the assignment, then returns
+   * a success message when deletion completes.
+   *
+   * @param {AuthenticatedRequest} req - Request object containing auth user and params.
+   * @param {Response} res - Response object used to send deletion result.
+   * @returns {Promise<Response>} HTTP response indicating success or failure.
+   */
+  deleteAssignment: async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: ReasonPhrases.UNAUTHORIZED });
+      }
+
+      const { id } = req.params;
+      const assignment = await assignmentService.deleteAssignment(
+        id.toString(),
+        user._id.toString()
+      );
+
+      if (!assignment) {
+        return res.status(StatusCodes.NOT_FOUND).json({ message: "Assignment not found." });
+      }
+
+      return res.status(StatusCodes.OK).json({ message: "Assignment deleted successfully." });
+    } catch (e) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
+    }
+  },
 };
 
 export default AssignmentController;

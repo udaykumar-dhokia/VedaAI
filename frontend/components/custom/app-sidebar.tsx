@@ -1,3 +1,8 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
+import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
@@ -8,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuBadge,
 } from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
@@ -21,6 +27,7 @@ import {
   ChartPieSliceIcon,
   GearIcon,
 } from "@phosphor-icons/react";
+import { RootState } from "@/store/store";
 
 interface SidebarProps {
   name: string;
@@ -28,14 +35,18 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { label: "Home", icon: SquaresFourIcon },
-  { label: "My Groups", icon: UsersIcon },
-  { label: "Assignments", icon: FileTextIcon, isActive: true },
-  { label: "AI Teacher's Toolkit", icon: BookOpenIcon },
-  { label: "My Library", icon: ChartPieSliceIcon },
+  { label: "Home", icon: SquaresFourIcon, href: "/dashboard" },
+  { label: "My Groups", icon: UsersIcon, href: "/groups" },
+  { label: "Assignments", icon: FileTextIcon, href: "/assignments" },
+  { label: "AI Teacher's Toolkit", icon: BookOpenIcon, href: "/toolkit" },
+  { label: "My Library", icon: ChartPieSliceIcon, href: "/library" },
 ];
 
 export function AppSidebar(props: SidebarProps) {
+  const pathname = usePathname();
+  const { assignments } = useSelector((state: RootState) => state.assignment);
+  const assignmentCount = assignments.length;
+
   return (
     <Sidebar variant="floating" collapsible="icon" className="">
       <SidebarHeader>
@@ -53,8 +64,13 @@ export function AppSidebar(props: SidebarProps) {
             </div>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <Button className="w-full rounded-full py-5 inset-shadow-sm inset-shadow-white shadow-sm shadow-veda">
-              <SparkleIcon /> Create Assignment
+            <Button
+              asChild
+              className="w-full rounded-full py-5 inset-shadow-sm inset-shadow-white shadow-sm shadow-veda"
+            >
+              <Link href="/assignments/create">
+                <SparkleIcon /> Create Assignment
+              </Link>
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -65,20 +81,29 @@ export function AppSidebar(props: SidebarProps) {
             <SidebarMenu className="px-2 mt-12">
               {menuItems.map((item) => {
                 const Icon = item.icon;
+                const isActive = pathname.startsWith(item.href);
                 return (
                   <SidebarMenuItem key={item.label}>
                     <SidebarMenuButton
-                      isActive={item.isActive}
+                      asChild
+                      isActive={isActive}
                       className={cn(
                         "py-6 px-4 rounded-xl text-base text-muted-foreground transition-colors",
-                        item.isActive
+                        isActive
                           ? "font-semibold"
                           : "font-medium text-muted-foreground hover:text-slate-900"
                       )}
                     >
-                      <Icon size={22} />
-                      <span>{item.label}</span>
+                      <Link href={item.href}>
+                        <Icon size={22} />
+                        <span>{item.label}</span>
+                      </Link>
                     </SidebarMenuButton>
+                    {item.label === "Assignments" && assignmentCount > 0 && (
+                      <SidebarMenuBadge className="bg-veda text-white text-xs rounded-full px-2 py-0.5">
+                        {assignmentCount}
+                      </SidebarMenuBadge>
+                    )}
                   </SidebarMenuItem>
                 );
               })}

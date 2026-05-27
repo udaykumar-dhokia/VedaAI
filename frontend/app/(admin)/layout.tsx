@@ -9,7 +9,7 @@ import Image from "next/image";
 import axiosClient from "@/lib/api";
 import { RootState } from "@/store/store";
 import { setAdmin, clearAdmin } from "@/store/slices/admin.slice";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/custom/app-sidebar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -55,7 +55,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <>
       <SidebarProvider>
         <AppSidebar name={user?.name || ""} school={user?.school || ""} />
-        <main className="bg-veda-back">{children}</main>
+        <SidebarInset className="bg-veda-back">{children}</SidebarInset>
       </SidebarProvider>
     </>
   );

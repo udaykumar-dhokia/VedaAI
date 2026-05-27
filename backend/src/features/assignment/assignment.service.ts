@@ -159,4 +159,15 @@ Only return the raw JSON object. Do not include any other conversational text or
   async getAssignmentById(id: string, teacherId: string): Promise<IAssignment | null> {
     return Assignment.findOne({ _id: id, teacher: teacherId });
   }
+
+  /**
+   * Delete an assignment document owned by the specified teacher.
+   *
+   * @param {string} id - Assignment document ID.
+   * @param {string} teacherId - Teacher user ID to enforce ownership.
+   * @returns {Promise<IAssignment | null>} Deleted assignment document or null if not found.
+   */
+  async deleteAssignment(id: string, teacherId: string): Promise<IAssignment | null> {
+    return Assignment.findOneAndDelete({ _id: id, teacher: teacherId });
+  }
 }
