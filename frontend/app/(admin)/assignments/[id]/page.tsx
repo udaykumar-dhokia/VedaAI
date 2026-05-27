@@ -4,20 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import {
-  ArrowLeftIcon,
-  SquaresFourIcon,
-  BellIcon,
-  CaretDownIcon,
-  DownloadSimpleIcon,
-} from "@phosphor-icons/react";
-import Image from "next/image";
+import { SquaresFourIcon, DownloadSimpleIcon } from "@phosphor-icons/react";
 import { RootState } from "@/store/store";
 import { Assignment } from "@/store/slices/assignment.slice";
 import axiosClient from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { Header } from "@/components/custom/header";
 
 export default function AssignmentViewPage() {
   const router = useRouter();
@@ -53,40 +47,16 @@ export default function AssignmentViewPage() {
 
   return (
     <div className="flex h-full w-full flex-col print:bg-white print:m-0 print:p-0">
-      <header className="flex items-center justify-between border-b border-border/40 bg-white px-6 py-3 mt-2 rounded-xl mr-2 print:hidden">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="rounded-lg p-1.5 text-foreground/70 transition-colors hover:bg-veda-back"
-          >
-            <ArrowLeftIcon size={20} weight="bold" />
-          </button>
-          <div className="h-5 w-px bg-border" />
+      <Header
+        breadcrumb={
           <div className="flex items-center gap-2 text-sm font-medium text-foreground/70">
             <SquaresFourIcon size={18} weight="fill" />
             <span className="text-muted-foreground">Assignment</span>
             <span>/</span>
             <span className="text-foreground">View</span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button className="relative rounded-lg p-1.5 text-foreground/70 transition-colors hover:bg-veda-back">
-            <BellIcon size={20} />
-          </button>
-          <div className="flex items-center gap-2">
-            <Image
-              src="/avatar.png"
-              alt="Avatar"
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium">{user?.name || "User"}</span>
-            <CaretDownIcon size={14} className="text-foreground/50" />
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center print:p-0 print:overflow-visible">
         {isLoading ? (

@@ -5,6 +5,7 @@ import authMiddlware from "../../middleware/auth.middleware";
 const router = express.Router();
 
 router.post("/generate", authMiddlware, AssignmentController.generateAssignment);
+router.get("/status/:jobId", authMiddlware, AssignmentController.getAssignmentStatus);
 router.get("/", authMiddlware, AssignmentController.getAssignments);
 router.get("/:id", authMiddlware, AssignmentController.getAssignmentById);
 router.delete("/:id", authMiddlware, AssignmentController.deleteAssignment);

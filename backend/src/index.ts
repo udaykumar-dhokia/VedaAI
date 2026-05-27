@@ -7,6 +7,8 @@ import { log } from "console";
 import { StatusCodes } from "http-status-codes";
 import connectDB from "./config/db.config";
 import "./config/redis.config";
+import "./config/queue.config";
+import "./config/worker.config";
 
 import authRoutes from "./features/auth/auth.routes";
 import adminRoutes from "./features/admin/admin.routes";
@@ -34,7 +36,7 @@ app.get("/", (_, res: Response) => {
   return res.status(StatusCodes.OK).json({ message: "Server is up and running..." });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   log(`Server is running at ${PORT}`);
   connectDB();
 });

@@ -4,15 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowLeftIcon,
-  SquaresFourIcon,
-  BellIcon,
-  CaretDownIcon,
-  FunnelIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-} from "@phosphor-icons/react";
+import { SquaresFourIcon, FunnelIcon, MagnifyingGlassIcon, PlusIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 import axiosClient from "@/lib/api";
 import { RootState } from "@/store/store";
@@ -23,6 +15,7 @@ import {
   setSearchQuery,
 } from "@/store/slices/assignment.slice";
 import { AssignmentCard } from "@/components/custom/assignment-card";
+import { Header } from "@/components/custom/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +24,6 @@ import { toast } from "sonner";
 export default function AssignmentsPage() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.admin);
   const { assignments, isLoading, searchQuery } = useSelector(
     (state: RootState) => state.assignment
   );
@@ -71,38 +63,14 @@ export default function AssignmentsPage() {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <header className="flex items-center justify-between border-b border-border/40 bg-white px-6 py-3 rounded-xl mt-2 mr-2">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="rounded-lg p-1.5 text-foreground/70 transition-colors hover:bg-veda-back"
-          >
-            <ArrowLeftIcon size={20} weight="bold" />
-          </button>
-          <div className="h-5 w-px bg-border" />
+      <Header
+        breadcrumb={
           <div className="flex items-center gap-2 text-sm font-medium text-foreground/70">
             <SquaresFourIcon size={18} weight="fill" />
             <span>Assignment</span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button className="relative rounded-lg p-1.5 text-foreground/70 transition-colors hover:bg-veda-back">
-            <BellIcon size={20} />
-          </button>
-          <div className="flex items-center gap-2">
-            <Image
-              src="/avatar.png"
-              alt="Avatar"
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium">{user?.name || "User"}</span>
-            <CaretDownIcon size={14} className="text-foreground/50" />
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <div className="flex-1 overflow-y-auto p-6">
         <motion.div
@@ -152,7 +120,7 @@ export default function AssignmentsPage() {
           </div>
         ) : filteredAssignments.length > 0 ? (
           <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {filteredAssignments.map((assignment, index) => (
                 <AssignmentCard
                   key={assignment._id}

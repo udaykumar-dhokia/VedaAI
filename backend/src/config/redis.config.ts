@@ -1,12 +1,10 @@
-import { Redis } from "ioredis";
+import IORedis from "ioredis";
 import { log } from "console";
 import "dotenv/config";
 
 const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
-const redisClient = new Redis(redisUrl, {
-  maxRetriesPerRequest: null,
-});
+const redisClient = new IORedis(redisUrl, { maxRetriesPerRequest: null });
 
 redisClient.on("connect", () => {
   log("Connected to Redis successfully");

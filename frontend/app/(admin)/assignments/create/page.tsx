@@ -7,8 +7,6 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   SquaresFourIcon,
-  BellIcon,
-  CaretDownIcon,
   CloudArrowUpIcon,
   CalendarBlankIcon,
   PlusIcon,
@@ -17,11 +15,8 @@ import {
   PlusCircleIcon,
   MicrophoneIcon,
   CaretRightIcon,
+  SpinnerIcon,
 } from "@phosphor-icons/react";
-import Image from "next/image";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,10 +33,12 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import axiosClient from "@/lib/api";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Header } from "@/components/custom/header";
+import { Button } from "@/components/ui/button";
 
 export default function CreateAssignmentPage() {
   const router = useRouter();
-  const { user } = useSelector((state: RootState) => state.admin);
 
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
@@ -118,15 +115,36 @@ export default function CreateAssignmentPage() {
         })),
       };
 
-      await axiosClient.post("/assignments/generate", payload);
-      toast.success("Assignment created successfully!");
-      router.push("/assignments");
+      const response = await axiosClient.post("/assignments/generate", payload);
+      const jobId = response.data.jobId;
+
+      setStep(4);
+
+      const interval = setInterval(async () => {
+        try {
+          const statusRes = await axiosClient.get(`/assignments/status/${jobId}`);
+          if (statusRes.data.status === "completed") {
+            clearInterval(interval);
+            toast.success("Assignment created successfully!");
+            router.push(`/assignments/${statusRes.data.assignmentId}`);
+          } else if (statusRes.data.status === "failed") {
+            clearInterval(interval);
+            toast.error(statusRes.data.error || "Failed to create assignment.");
+            setIsSubmitting(false);
+            setStep(3);
+          }
+        } catch {
+          clearInterval(interval);
+          toast.error("Error checking job status.");
+          setIsSubmitting(false);
+          setStep(3);
+        }
+      }, 3000);
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          "Failed to create assignment."
+          "Failed to start assignment generation."
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -417,44 +435,72 @@ export default function CreateAssignmentPage() {
         </motion.div>
       );
     }
+
+    if (step === 4) {
+      return (
+        <motion.div
+          key="step4"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6 w-full p-4"
+        >
+          <div className="text-center space-y-3 mb-8">
+            <Skeleton className="h-8 w-3/4 mx-auto" />
+            <Skeleton className="h-5 w-1/2 mx-auto" />
+            <Skeleton className="h-5 w-1/3 mx-auto" />
+          </div>
+
+          <div className="flex justify-between border-b pb-4 mb-6">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-5 w-32" />
+          </div>
+
+          <div className="space-y-8">
+            {/* Section A Skeleton */}
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-48 mx-auto" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-11/12" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </div>
+            {/* Section B Skeleton */}
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-48 mx-auto" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-12 flex flex-col items-center gap-4">
+            <SpinnerIcon className="animate-spin" size={18} />
+            <p className="text-muted-foreground animate-pulse font-medium">
+              Generating your assignment using AI...
+            </p>
+          </div>
+        </motion.div>
+      );
+    }
   };
 
   return (
     <div className="flex h-full w-full flex-col">
-      <header className="flex items-center justify-between border-b border-border/40 bg-white px-6 py-3 mt-2 rounded-xl mr-2">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="rounded-lg p-1.5 text-foreground/70 transition-colors hover:bg-veda-back"
-          >
-            <ArrowLeftIcon size={20} weight="bold" />
-          </button>
-          <div className="h-5 w-px bg-border" />
+      <Header
+        breadcrumb={
           <div className="flex items-center gap-2 text-sm font-medium text-foreground/70">
             <SquaresFourIcon size={18} weight="fill" />
             <span className="text-muted-foreground">Assignment</span>
             <span>/</span>
             <span className="text-foreground">Create</span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button className="relative rounded-lg p-1.5 text-foreground/70 transition-colors hover:bg-veda-back">
-            <BellIcon size={20} />
-          </button>
-          <div className="flex items-center gap-2">
-            <Image
-              src="/avatar.png"
-              alt="Avatar"
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium">{user?.name || "User"}</span>
-            <CaretDownIcon size={14} className="text-foreground/50" />
-          </div>
-        </div>
-      </header>
+        }
+      />
 
       <div className="flex-1 overflow-y-auto p-6 flex flex-col">
         <motion.div
@@ -491,17 +537,24 @@ export default function CreateAssignmentPage() {
             {step === 1 && "Assignment Details"}
             {step === 2 && "File & Schedule"}
             {step === 3 && "Review & Generate"}
+            {step === 4 && "Generating Assignment"}
           </h2>
           <p className="text-sm text-muted-foreground mb-8">
             {step === 1 && "Basic information about your assignment"}
             {step === 2 && "Provide reference materials and deadlines"}
             {step === 3 && "Review your assignment configuration before generation"}
+            {step === 4 && "Please wait while our AI creates your exam paper."}
           </p>
 
           <AnimatePresence mode="wait">{renderStepContent()}</AnimatePresence>
         </motion.div>
 
-        <div className="flex items-center justify-between bg-transparent pb-6 pt-2 max-w-4xl mx-auto w-full mt-auto">
+        <div
+          className={cn(
+            "flex items-center justify-between bg-transparent pb-6 pt-2 max-w-4xl mx-auto w-full mt-auto",
+            step === 4 ? "hidden" : ""
+          )}
+        >
           <Button
             variant="outline"
             className="rounded-full px-6 bg-white border-gray-200 h-11"

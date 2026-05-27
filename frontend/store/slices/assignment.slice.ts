@@ -10,7 +10,9 @@ export interface Assignment {
   timeAllowed?: string;
   dueDate?: string;
   sections?: {
-    title: string;
+    name?: string;
+    type?: string;
+    title?: string;
     description?: string;
     questions: {
       questionNumber: number;

@@ -2,6 +2,7 @@ import { Response } from "express";
 import { StatusCodes, ReasonPhrases } from "http-status-codes";
 import { AuthenticatedRequest } from "../../middleware/auth.middleware";
 import { AssignmentService } from "./assignment.service";
+import jobs from "../../config/queue.config";
 
 const assignmentService = new AssignmentService();
 
@@ -46,7 +47,7 @@ const AssignmentController = {
           .json({ message: "Required parameters are missing." });
       }
 
-      const assignment = await assignmentService.generateAssignment({
+      const job = await jobs.add("generate-assignment", {
         teacherId: user._id.toString(),
         school: user.school,
         title,
@@ -58,7 +59,9 @@ const AssignmentController = {
         referenceText,
       });
 
-      return res.status(StatusCodes.CREATED).json(assignment);
+      return res
+        .status(StatusCodes.ACCEPTED)
+        .json({ jobId: job.id, message: "Assignment generation started." });
     } catch (e: any) {
       console.error(e);
       return res
@@ -156,6 +159,34 @@ const AssignmentController = {
       }
 
       return res.status(StatusCodes.OK).json({ message: "Assignment deleted successfully." });
+    } catch (e) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
+    }
+  },
+
+  /**
+   * Check the status of an assignment generation job.
+   */
+  getAssignmentStatus: async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+    try {
+      const { jobId } = req.params;
+      const job = await jobs.getJob(jobId as string);
+
+      if (!job) {
+        return res.status(StatusCodes.NOT_FOUND).json({ message: "Job not found." });
+      }
+
+      const state = await job.getState();
+
+      if (state === "completed") {
+        return res.status(StatusCodes.OK).json({ status: state, assignmentId: job.returnvalue });
+      } else if (state === "failed") {
+        return res.status(StatusCodes.OK).json({ status: state, error: job.failedReason });
+      } else {
+        return res.status(StatusCodes.OK).json({ status: state });
+      }
     } catch (e) {
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
