@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useSelector } from "react-redux";
+import { usePathname, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import {
   Sidebar,
@@ -26,8 +26,13 @@ import {
   BookOpenIcon,
   ChartPieSliceIcon,
   GearIcon,
+  SignOutIcon,
 } from "@phosphor-icons/react";
 import { RootState } from "@/store/store";
+import { clearAdmin } from "@/store/slices/admin.slice";
+import { clearAssignments } from "@/store/slices/assignment.slice";
+import axiosClient from "@/lib/api";
+import { toast } from "sonner";
 
 interface SidebarProps {
   name: string;
@@ -44,8 +49,22 @@ const menuItems = [
 
 export function AppSidebar(props: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
   const { assignments } = useSelector((state: RootState) => state.assignment);
   const assignmentCount = assignments.length;
+
+  const handleLogout = async () => {
+    try {
+      await axiosClient.post("/auth/logout");
+      dispatch(clearAdmin());
+      dispatch(clearAssignments());
+      toast.success("Logged out successfully");
+      router.push("/");
+    } catch {
+      toast.error("Failed to log out");
+    }
+  };
 
   return (
     <Sidebar variant="floating" collapsible="icon" className="">
@@ -116,12 +135,23 @@ export function AppSidebar(props: SidebarProps) {
           <SidebarMenuItem>
             <SidebarMenuButton
               className={cn(
-                "py-6 px-4 rounded-xl text-base text-muted-foreground transition-colors mb-3",
+                "py-6 px-4 rounded-xl text-base text-muted-foreground transition-colors mb-1",
                 "font-medium text-muted-foreground hover:text-slate-900"
               )}
             >
               <GearIcon size={22} />
               <span>Settings</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleLogout}
+              className={cn(
+                "py-6 px-4 rounded-xl text-base text-red-500 hover:text-red-600 transition-colors mb-3 hover:bg-red-50/50 cursor-pointer"
+              )}
+            >
+              <SignOutIcon size={22} />
+              <span>Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

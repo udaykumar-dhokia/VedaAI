@@ -69,6 +69,28 @@ const AuthController = {
         .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
     }
   },
+
+  /**
+   * Clear the authentication cookie and log the user out.
+   *
+   * Sends an expired token cookie to the browser so the client no longer
+   * has a valid session token.
+   *
+   * @param {Request} req - Express request object.
+   * @param {Response} res - Express response object for sending results.
+   * @returns {Promise<Response>} HTTP response confirming logout.
+   */
+  logout: async (req: Request, res: Response): Promise<Response> => {
+    res.cookie("token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      expires: new Date(0),
+    });
+    return res.status(StatusCodes.OK).json({
+      message: "Successfully logged out.",
+    });
+  },
 };
 
 export default AuthController;

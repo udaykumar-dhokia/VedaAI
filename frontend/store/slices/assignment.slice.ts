@@ -60,9 +60,19 @@ const assignmentSlice = createSlice({
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload;
     },
+    clearAssignments: (state) => {
+      state.assignments = [];
+      state.isLoading = true;
+      state.searchQuery = "";
+    },
   },
 });
 
-export const { setAssignments, removeAssignment, setAssignmentLoading, setSearchQuery } =
-  assignmentSlice.actions;
+export const {
+  setAssignments,
+  removeAssignment,
+  setAssignmentLoading,
+  setSearchQuery,
+  clearAssignments,
+} = assignmentSlice.actions;
 export default assignmentSlice.reducer;
