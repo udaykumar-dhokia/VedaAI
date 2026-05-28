@@ -45,19 +45,26 @@ export function AssignmentCard({ assignment, index, onView, onDelete }: Assignme
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10, scale: 0.95 }}
       transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
-      className="group relative flex flex-col justify-between rounded-2xl bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-sm"
+      className="group relative flex flex-col justify-between rounded-2xl bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-sm cursor-pointer"
+      onClick={() => onView(assignment._id)}
     >
       <div className="flex items-start justify-between">
         <h3 className="text-lg font-semibold text-foreground pr-6">{assignment.title}</h3>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="rounded-lg p-1 text-muted-foreground opacity-0 transition-opacity duration-200 hover:bg-veda-back group-hover:opacity-100 focus:opacity-100">
+            <button
+              className="rounded-lg p-1 text-muted-foreground opacity-0 transition-opacity duration-200 hover:bg-veda-back group-hover:opacity-100 focus:opacity-100"
+              onClick={(e) => e.stopPropagation()}
+            >
               <DotsThreeVerticalIcon size={20} weight="bold" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuContent align="end" className="w-44" onClick={(e) => e.stopPropagation()}>
             <DropdownMenuItem
-              onClick={() => onView(assignment._id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onView(assignment._id);
+              }}
               className="cursor-pointer gap-2 py-2"
             >
               <EyeIcon size={16} />
@@ -65,7 +72,10 @@ export function AssignmentCard({ assignment, index, onView, onDelete }: Assignme
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => setShowDeleteAlert(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteAlert(true);
+              }}
               className="cursor-pointer gap-2 py-2"
             >
               <TrashIcon size={16} />
@@ -107,7 +117,7 @@ export function AssignmentCard({ assignment, index, onView, onDelete }: Assignme
       </div>
 
       <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -115,9 +125,12 @@ export function AssignmentCard({ assignment, index, onView, onDelete }: Assignme
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => onDelete(assignment._id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(assignment._id);
+              }}
               className="bg-red-500 hover:bg-red-600"
             >
               Delete

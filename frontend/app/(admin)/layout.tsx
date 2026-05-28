@@ -13,6 +13,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/custom/app-sidebar";
 import { MobileHeader } from "@/components/custom/mobile-header";
 import { MobileBottomNav } from "@/components/custom/mobile-bottom-nav";
+import { ProductTour } from "@/components/custom/product-tour";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -62,6 +63,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           {children}
           <MobileBottomNav />
         </SidebarInset>
+        <ProductTour />
       </SidebarProvider>
     </>
   );

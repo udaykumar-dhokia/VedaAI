@@ -32,6 +32,8 @@ const AssignmentController = {
         questionConfigs,
         additionalInstructions,
         referenceText,
+        llmApiKey,
+        llmModelName,
       } = req.body;
 
       if (
@@ -57,6 +59,8 @@ const AssignmentController = {
         questionConfigs,
         additionalInstructions,
         referenceText,
+        llmApiKey,
+        llmModelName,
       });
 
       return res
@@ -219,7 +223,7 @@ const AssignmentController = {
       }
 
       const { id } = req.params;
-      const { feedbacks } = req.body;
+      const { feedbacks, llmApiKey, llmModelName } = req.body;
 
       if (!feedbacks || !Array.isArray(feedbacks)) {
         return res
@@ -231,6 +235,8 @@ const AssignmentController = {
         assignmentId: id,
         teacherId: user._id.toString(),
         feedbacks,
+        llmApiKey,
+        llmModelName,
       });
 
       return res

@@ -125,14 +125,44 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
   html {
     @apply font-sans;
   }
+}
+
+/* Driver.js Product Tour Overrides */
+div.driver-popover {
+  @apply rounded-3xl border-gray-100 shadow-xl p-5 font-sans;
+}
+
+div.driver-popover-title {
+  @apply text-lg font-bold text-foreground;
+}
+
+div.driver-popover-description {
+  @apply text-muted-foreground mt-2 text-sm;
+}
+
+div.driver-popover-footer button.driver-popover-next-btn {
+  @apply bg-veda text-white hover:bg-veda/90 shadow-sm border-none rounded-full font-medium px-4 py-2 transition-colors cursor-pointer;
+  text-shadow: none;
+}
+
+div.driver-popover-footer button.driver-popover-prev-btn {
+  @apply bg-gray-100 text-gray-700 hover:bg-gray-200 border-none rounded-full font-medium px-4 py-2 transition-colors cursor-pointer;
+  text-shadow: none;
+}
+
+button.driver-popover-close-btn {
+  @apply text-gray-400 hover:text-gray-700 bg-transparent border-none outline-none transition-colors cursor-pointer;
 }

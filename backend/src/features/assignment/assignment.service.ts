@@ -2,7 +2,7 @@ import { ChatOllama } from "@langchain/ollama";
 import { z } from "zod";
 import Assignment, { IAssignment, QuestionType } from "./assignment.model";
 import "dotenv/config";
-import llm from "../../config/llm.config";
+import { getLlm } from "../../config/llm.config";
 
 const questionOutputSchema = z.object({
   questionText: z.string(),
@@ -57,6 +57,8 @@ export class AssignmentService {
     }[];
     additionalInstructions?: string;
     referenceText?: string;
+    llmApiKey?: string;
+    llmModelName?: string;
   }): Promise<IAssignment> {
     const configDescriptions = params.questionConfigs
       .map(
@@ -107,11 +109,13 @@ Only return the raw JSON object. Do not include any other conversational text or
     let generatedSections: any[] = [];
 
     try {
+      const llm = getLlm(params.llmApiKey, params.llmModelName);
       const structuredLlm = llm.withStructuredOutput(assignmentOutputSchema);
       const result = (await structuredLlm.invoke(systemPrompt)) as AssignmentOutput;
       generatedSections = result.sections;
       generatedTitle = result.title || params.title;
     } catch (e) {
+      const llm = getLlm(params.llmApiKey, params.llmModelName);
       const fallbackPrompt = `${systemPrompt}\n\nYour response must be a single, valid JSON block. Wrap it in a JSON markdown block if necessary, but return only JSON.`;
       const response = await llm.invoke(fallbackPrompt);
       const text =
@@ -174,6 +178,8 @@ Only return the raw JSON object. Do not include any other conversational text or
       questionIndex: number;
       comment: string;
     }[];
+    llmApiKey?: string;
+    llmModelName?: string;
   }): Promise<IAssignment> {
     const assignment = await Assignment.findOne({
       _id: params.assignmentId,
@@ -232,11 +238,13 @@ Only return the raw JSON object. Do not include any other conversational text or
     let generatedTitle = assignment.title;
 
     try {
+      const llm = getLlm(params.llmApiKey, params.llmModelName);
       const structuredLlm = llm.withStructuredOutput(assignmentOutputSchema);
       const result = (await structuredLlm.invoke(systemPrompt)) as AssignmentOutput;
       generatedSections = result.sections;
       generatedTitle = result.title || assignment.title;
     } catch (e) {
+      const llm = getLlm(params.llmApiKey, params.llmModelName);
       const fallbackPrompt = `${systemPrompt}\n\nYour response must be a single, valid JSON block. Wrap it in a JSON markdown block if necessary, but return only JSON.`;
       const response = await llm.invoke(fallbackPrompt);
       const text =

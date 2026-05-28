@@ -33,6 +33,8 @@ import { clearAdmin } from "@/store/slices/admin.slice";
 import { clearAssignments } from "@/store/slices/assignment.slice";
 import axiosClient from "@/lib/api";
 import { toast } from "sonner";
+import { useState } from "react";
+import { SettingsDialog } from "./settings-dialog";
 
 interface SidebarProps {
   name: string;
@@ -53,6 +55,7 @@ export function AppSidebar(props: SidebarProps) {
   const dispatch = useDispatch();
   const { assignments } = useSelector((state: RootState) => state.assignment);
   const assignmentCount = assignments.length;
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -82,7 +85,7 @@ export function AppSidebar(props: SidebarProps) {
               <h1 className="font-bold text-2xl">VedaAI</h1>
             </div>
           </SidebarMenuItem>
-          <SidebarMenuItem>
+          <SidebarMenuItem id="tour-create-assignment">
             <Button
               asChild
               className="w-full rounded-full py-5 inset-shadow-sm inset-shadow-white shadow-sm shadow-veda"
@@ -102,7 +105,10 @@ export function AppSidebar(props: SidebarProps) {
                 const Icon = item.icon;
                 const isActive = pathname.startsWith(item.href);
                 return (
-                  <SidebarMenuItem key={item.label}>
+                  <SidebarMenuItem
+                    key={item.label}
+                    id={item.label === "Assignments" ? "tour-assignments-menu" : undefined}
+                  >
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
@@ -132,10 +138,11 @@ export function AppSidebar(props: SidebarProps) {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem id="tour-settings-btn">
             <SidebarMenuButton
+              onClick={() => setShowSettings(true)}
               className={cn(
-                "py-6 px-4 rounded-xl text-base text-muted-foreground transition-colors mb-1",
+                "py-6 px-4 rounded-xl text-base text-muted-foreground transition-colors mb-1 cursor-pointer",
                 "font-medium text-muted-foreground hover:text-slate-900"
               )}
             >
@@ -171,6 +178,7 @@ export function AppSidebar(props: SidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SettingsDialog open={showSettings} onOpenChange={setShowSettings} />
     </Sidebar>
   );
 }

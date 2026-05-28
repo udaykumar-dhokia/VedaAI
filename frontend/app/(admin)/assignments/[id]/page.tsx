@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Header } from "@/components/custom/header";
 import { Textarea } from "@/components/ui/textarea";
+import { useSettings } from "@/hooks/use-settings";
 
 export default function AssignmentViewPage() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function AssignmentViewPage() {
   const [feedbacks, setFeedbacks] = useState<
     { sectionIndex: number; questionIndex: number; comment: string }[]
   >([]);
+  const { settings } = useSettings();
 
   useEffect(() => {
     const fetchAssignment = async () => {
@@ -88,7 +90,11 @@ export default function AssignmentViewPage() {
     try {
       setIsRegenerating(true);
       setIsEditMode(false);
-      const res = await axiosClient.post(`/assignments/${id}/regenerate`, { feedbacks });
+      const res = await axiosClient.post(`/assignments/${id}/regenerate`, {
+        feedbacks,
+        llmApiKey: settings.llmApiKey,
+        llmModelName: settings.llmModelName,
+      });
       const { jobId } = res.data;
 
       const interval = setInterval(async () => {

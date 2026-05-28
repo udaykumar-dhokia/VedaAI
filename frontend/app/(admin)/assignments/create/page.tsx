@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/custom/header";
 import { Button } from "@/components/ui/button";
+import { useSettings } from "@/hooks/use-settings";
 
 export default function CreateAssignmentPage() {
   const router = useRouter();
@@ -47,6 +48,7 @@ export default function CreateAssignmentPage() {
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { settings } = useSettings();
 
   const [questionConfigs, setQuestionConfigs] = useState([
     { id: "1", type: "Multiple Choice Questions", numberQuestions: 4, marksPerQuestion: 1 },
@@ -113,6 +115,8 @@ export default function CreateAssignmentPage() {
           numberQuestions,
           marksPerQuestion,
         })),
+        llmApiKey: settings.llmApiKey,
+        llmModelName: settings.llmModelName,
       };
 
       const response = await axiosClient.post("/assignments/generate", payload);
