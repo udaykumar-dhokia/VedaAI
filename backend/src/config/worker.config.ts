@@ -11,6 +11,10 @@ const worker = new Worker(
       const assignment = await assignmentService.generateAssignment(job.data);
       return assignment._id.toString();
     }
+    if (job.name === "regenerate-assignment") {
+      const assignment = await assignmentService.regenerateAssignment(job.data);
+      return assignment._id.toString();
+    }
   },
   { connection: redisClient as any }
 );

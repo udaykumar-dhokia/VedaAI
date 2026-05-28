@@ -11,6 +11,8 @@ import { RootState } from "@/store/store";
 import { setAdmin, clearAdmin } from "@/store/slices/admin.slice";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/custom/app-sidebar";
+import { MobileHeader } from "@/components/custom/mobile-header";
+import { MobileBottomNav } from "@/components/custom/mobile-bottom-nav";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -55,7 +57,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <>
       <SidebarProvider>
         <AppSidebar name={user?.name || ""} school={user?.school || ""} />
-        <SidebarInset className="bg-veda-back">{children}</SidebarInset>
+        <SidebarInset className="bg-veda-back relative min-h-screen pb-28 md:pb-0 overflow-x-hidden">
+          <MobileHeader />
+          {children}
+          <MobileBottomNav />
+        </SidebarInset>
       </SidebarProvider>
     </>
   );

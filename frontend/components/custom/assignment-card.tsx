@@ -1,7 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { DotsThreeVerticalIcon, EyeIcon, TrashIcon } from "@phosphor-icons/react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +37,8 @@ function formatDate(dateString: string): string {
 }
 
 export function AssignmentCard({ assignment, index, onView, onDelete }: AssignmentCardProps) {
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 2 }}
@@ -52,7 +65,7 @@ export function AssignmentCard({ assignment, index, onView, onDelete }: Assignme
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => onDelete(assignment._id)}
+              onClick={() => setShowDeleteAlert(true)}
               className="cursor-pointer gap-2 py-2"
             >
               <TrashIcon size={16} />
@@ -92,6 +105,26 @@ export function AssignmentCard({ assignment, index, onView, onDelete }: Assignme
           </span>
         )}
       </div>
+
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this assignment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => onDelete(assignment._id)}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

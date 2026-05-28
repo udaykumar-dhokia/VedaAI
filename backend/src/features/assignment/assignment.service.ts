@@ -151,6 +151,122 @@ Only return the raw JSON object. Do not include any other conversational text or
   }
 
   /**
+   * Regenerate an assignment based on teacher feedback.
+   *
+   * Finds the assignment owned by the teacher, applies the provided feedback,
+   * and requests a new structured assignment from the LLM while preserving
+   * the original question count and assignment structure.
+   *
+   * @param {Object} params - Regeneration parameters.
+   * @param {string} params.assignmentId - ID of the assignment to regenerate.
+   * @param {string} params.teacherId - ID of the teacher requesting regeneration.
+   * @param {Array} params.feedbacks - Feedback items for specific questions.
+   * @param {number} params.feedbacks[].sectionIndex - Index of the section with feedback.
+   * @param {number} params.feedbacks[].questionIndex - Index of the question with feedback.
+   * @param {string} params.feedbacks[].comment - The feedback comment to apply.
+   * @returns {Promise<IAssignment>} Updated assignment document.
+   */
+  async regenerateAssignment(params: {
+    assignmentId: string;
+    teacherId: string;
+    feedbacks: {
+      sectionIndex: number;
+      questionIndex: number;
+      comment: string;
+    }[];
+  }): Promise<IAssignment> {
+    const assignment = await Assignment.findOne({
+      _id: params.assignmentId,
+      teacher: params.teacherId,
+    });
+    if (!assignment) {
+      throw new Error("Assignment not found or unauthorized.");
+    }
+
+    const currentSectionsStr = JSON.stringify(assignment.sections, null, 2);
+
+    let feedbackStr = "Feedback on specific questions:\n";
+    params.feedbacks.forEach((f) => {
+      feedbackStr += `- Section index ${f.sectionIndex}, Question index ${f.questionIndex}: ${f.comment}\n`;
+    });
+
+    const totalQuestions = assignment.questionConfigs.reduce(
+      (acc, c) => acc + c.numberQuestions,
+      0
+    );
+
+    const systemPrompt = `You are VedaAI, an advanced educational AI. Your task is to modify and regenerate a highly structured academic assignment based on the teacher's feedback.
+
+You are provided with the current sections and questions of the assignment, and a list of specific feedback comments indicating what needs to be changed.
+Apply the requested changes to the specific questions mentioned in the feedback, and preserve the rest of the assignment as much as possible.
+The total number of questions across all sections MUST be exactly ${totalQuestions}.
+
+Current Assignment Sections JSON:
+${currentSectionsStr}
+
+Teacher's Feedback:
+${feedbackStr}
+
+You must respond strictly with JSON conforming to this schema:
+{
+  "title": "Assignment Title",
+  "sections": [
+    {
+      "name": "Section A",
+      "type": "Multiple Choice Questions",
+      "questions": [
+        {
+          "questionText": "Question text here?",
+          "options": ["Option A", "Option B", "Option C", "Option D"],
+          "difficulty": "easy",
+          "marks": 5
+        }
+      ]
+    }
+  ]
+}
+
+Only return the raw JSON object. Do not include any other conversational text or surrounding text.`;
+
+    let generatedSections: any[] = [];
+    let generatedTitle = assignment.title;
+
+    try {
+      const structuredLlm = llm.withStructuredOutput(assignmentOutputSchema);
+      const result = (await structuredLlm.invoke(systemPrompt)) as AssignmentOutput;
+      generatedSections = result.sections;
+      generatedTitle = result.title || assignment.title;
+    } catch (e) {
+      const fallbackPrompt = `${systemPrompt}\n\nYour response must be a single, valid JSON block. Wrap it in a JSON markdown block if necessary, but return only JSON.`;
+      const response = await llm.invoke(fallbackPrompt);
+      const text =
+        typeof response.content === "string" ? response.content : JSON.stringify(response.content);
+
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("Failed to regenerate a valid JSON assignment.");
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      generatedSections = parsed.sections;
+      generatedTitle = parsed.title || assignment.title;
+    }
+
+    const totalMarks = generatedSections.reduce(
+      (acc, sec) =>
+        acc + sec.questions.reduce((qAcc: number, q: { marks: number }) => qAcc + q.marks, 0),
+      0
+    );
+
+    assignment.title = generatedTitle;
+    assignment.sections = generatedSections;
+    assignment.totalMarks = totalMarks;
+
+    await assignment.save();
+    return assignment;
+  }
+
+  /**
    * Retrieve assignments for a specific teacher.
    *
    * Returns assignments authored by the given teacher, sorted by newest first.

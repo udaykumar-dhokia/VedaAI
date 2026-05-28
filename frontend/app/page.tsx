@@ -40,7 +40,7 @@ const Page = () => {
 
       dispatch(setAdmin(response.data.user));
       toast.success("Welcome back to VedaAI!");
-      router.push("/dashboard");
+      router.push("/assignments");
     } catch (e: unknown) {
       console.log(e);
       const errorMessage = "Invalid credentials. Please try again.";

@@ -35,11 +35,11 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { label: "Home", icon: SquaresFourIcon, href: "/dashboard" },
-  { label: "My Groups", icon: UsersIcon, href: "/groups" },
+  { label: "Home", icon: SquaresFourIcon, href: "#" },
+  { label: "My Groups", icon: UsersIcon, href: "#" },
   { label: "Assignments", icon: FileTextIcon, href: "/assignments" },
-  { label: "AI Teacher's Toolkit", icon: BookOpenIcon, href: "/toolkit" },
-  { label: "My Library", icon: ChartPieSliceIcon, href: "/library" },
+  { label: "AI Teacher's Toolkit", icon: BookOpenIcon, href: "#" },
+  { label: "My Library", icon: ChartPieSliceIcon, href: "#" },
 ];
 
 export function AppSidebar(props: SidebarProps) {

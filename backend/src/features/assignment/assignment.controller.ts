@@ -167,7 +167,14 @@ const AssignmentController = {
   },
 
   /**
-   * Check the status of an assignment generation job.
+   * Get the execution status of a queued assignment job.
+   *
+   * Looks up a BullMQ job by ID and returns its state, plus the result or
+   * failure reason when available.
+   *
+   * @param {AuthenticatedRequest} req - Request object containing params.
+   * @param {Response} res - Response object used to return job status.
+   * @returns {Promise<Response>} Job status payload or error response.
    */
   getAssignmentStatus: async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
     try {
@@ -191,6 +198,49 @@ const AssignmentController = {
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ message: ReasonPhrases.INTERNAL_SERVER_ERROR });
+    }
+  },
+
+  /**
+   * Queue an assignment regeneration job using teacher feedback.
+   *
+   * Validates the provided feedback array and enqueues a regeneration job
+   * that will refresh the assignment with the supplied instructor input.
+   *
+   * @param {AuthenticatedRequest} req - Request object containing auth user and body.
+   * @param {Response} res - Response object used to return queue result.
+   * @returns {Promise<Response>} Accepted response with the queued job ID.
+   */
+  regenerateAssignment: async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: ReasonPhrases.UNAUTHORIZED });
+      }
+
+      const { id } = req.params;
+      const { feedbacks } = req.body;
+
+      if (!feedbacks || !Array.isArray(feedbacks)) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ message: "Feedbacks array is required." });
+      }
+
+      const job = await jobs.add("regenerate-assignment", {
+        assignmentId: id,
+        teacherId: user._id.toString(),
+        feedbacks,
+      });
+
+      return res
+        .status(StatusCodes.ACCEPTED)
+        .json({ jobId: job.id, message: "Assignment regeneration started." });
+    } catch (e: any) {
+      console.error(e);
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: e.message || ReasonPhrases.INTERNAL_SERVER_ERROR });
     }
   },
 };

@@ -34,7 +34,7 @@ export function Header({ breadcrumb, className }: HeaderProps) {
         {breadcrumb}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="hidden md:flex items-center gap-4">
         <button className="relative rounded-lg p-1.5 text-foreground/70 transition-colors hover:bg-veda-back">
           <BellIcon size={20} />
         </button>

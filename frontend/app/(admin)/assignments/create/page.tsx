@@ -192,87 +192,110 @@ export default function CreateAssignmentPage() {
           </div>
 
           <div>
-            <div className="flex items-center gap-4 mb-3 text-sm font-semibold">
+            <div className="hidden md:flex items-center gap-4 mb-3 text-sm font-semibold">
               <div className="flex-1">Question Type</div>
               <div className="flex items-center gap-4">
-                <div className="w-25 text-center">No. of Questions</div>
-                <div className="w-25 text-center">Marks</div>
+                <div className="w-28 text-center">No. of Questions</div>
+                <div className="w-28 text-center">Marks</div>
                 <div className="w-5"></div>
               </div>
             </div>
+            <Label className="md:hidden text-sm font-semibold mb-3 block">Question Type</Label>
 
             {questionConfigs.map((q) => (
-              <div key={q.id} className="flex items-center gap-4 mb-3">
-                <div className="flex-1">
-                  <Select
-                    value={q.type}
-                    onValueChange={(val) => handleUpdateConfig(q.id, "type", val)}
-                  >
-                    <SelectTrigger className="rounded-xl h-11 bg-white border-gray-200 focus:ring-1 focus:ring-veda shadow-none">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Multiple Choice Questions">
-                        Multiple Choice Questions
-                      </SelectItem>
-                      <SelectItem value="Short Questions">Short Questions</SelectItem>
-                      <SelectItem value="Diagram/Graph-Based Questions">
-                        Diagram/Graph-Based Questions
-                      </SelectItem>
-                      <SelectItem value="Numerical Problems">Numerical Problems</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-between bg-white rounded-full px-3 h-11 border border-gray-200 w-25 shadow-none">
-                    <button
-                      onClick={() =>
-                        handleUpdateConfig(
-                          q.id,
-                          "numberQuestions",
-                          Math.max(1, q.numberQuestions - 1)
-                        )
-                      }
-                      className="text-gray-400 hover:text-black transition-colors"
+              <div
+                key={q.id}
+                className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-4 md:mb-3 bg-white md:bg-transparent p-4 md:p-0 rounded-2xl md:rounded-none border border-gray-100 md:border-none shadow-sm md:shadow-none"
+              >
+                <div className="flex items-center gap-3 md:flex-1">
+                  <div className="flex-1">
+                    <Select
+                      value={q.type}
+                      onValueChange={(val) => handleUpdateConfig(q.id, "type", val)}
                     >
-                      <MinusIcon size={14} weight="bold" />
-                    </button>
-                    <span className="font-semibold text-sm">{q.numberQuestions}</span>
-                    <button
-                      onClick={() =>
-                        handleUpdateConfig(q.id, "numberQuestions", q.numberQuestions + 1)
-                      }
-                      className="text-gray-400 hover:text-black transition-colors"
-                    >
-                      <PlusIcon size={14} weight="bold" />
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between bg-white rounded-full px-3 h-11 border border-gray-200 w-25 shadow-none">
-                    <button
-                      onClick={() =>
-                        handleUpdateConfig(
-                          q.id,
-                          "marksPerQuestion",
-                          Math.max(1, q.marksPerQuestion - 1)
-                        )
-                      }
-                      className="text-gray-400 hover:text-black transition-colors"
-                    >
-                      <MinusIcon size={14} weight="bold" />
-                    </button>
-                    <span className="font-semibold text-sm">{q.marksPerQuestion}</span>
-                    <button
-                      onClick={() =>
-                        handleUpdateConfig(q.id, "marksPerQuestion", q.marksPerQuestion + 1)
-                      }
-                      className="text-gray-400 hover:text-black transition-colors"
-                    >
-                      <PlusIcon size={14} weight="bold" />
-                    </button>
+                      <SelectTrigger className="rounded-xl h-11 bg-gray-50 md:bg-white border-gray-200 focus:ring-1 focus:ring-veda shadow-none">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Multiple Choice Questions">
+                          Multiple Choice Questions
+                        </SelectItem>
+                        <SelectItem value="Short Questions">Short Questions</SelectItem>
+                        <SelectItem value="Diagram/Graph-Based Questions">
+                          Diagram/Graph-Based Questions
+                        </SelectItem>
+                        <SelectItem value="Numerical Problems">Numerical Problems</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <button
                     onClick={() => removeConfig(q.id)}
-                    className="text-gray-400 hover:text-black transition-colors w-5 flex justify-center"
+                    className="md:hidden text-gray-400 hover:text-black flex items-center justify-center p-2"
+                  >
+                    <XIcon size={16} weight="bold" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3 justify-between md:justify-start">
+                  <div className="flex-1 md:w-28 flex flex-col gap-1.5">
+                    <span className="md:hidden text-xs font-semibold text-center text-zinc-600">
+                      No. of Questions
+                    </span>
+                    <div className="flex items-center justify-between bg-gray-50 md:bg-white rounded-full px-3 h-11 border border-gray-200 shadow-none">
+                      <button
+                        onClick={() =>
+                          handleUpdateConfig(
+                            q.id,
+                            "numberQuestions",
+                            Math.max(1, q.numberQuestions - 1)
+                          )
+                        }
+                        className="text-gray-400 hover:text-black transition-colors"
+                      >
+                        <MinusIcon size={14} weight="bold" />
+                      </button>
+                      <span className="font-semibold text-sm">{q.numberQuestions}</span>
+                      <button
+                        onClick={() =>
+                          handleUpdateConfig(q.id, "numberQuestions", q.numberQuestions + 1)
+                        }
+                        className="text-gray-400 hover:text-black transition-colors"
+                      >
+                        <PlusIcon size={14} weight="bold" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex-1 md:w-28 flex flex-col gap-1.5">
+                    <span className="md:hidden text-xs font-semibold text-center text-zinc-600">
+                      Marks
+                    </span>
+                    <div className="flex items-center justify-between bg-gray-50 md:bg-white rounded-full px-3 h-11 border border-gray-200 shadow-none">
+                      <button
+                        onClick={() =>
+                          handleUpdateConfig(
+                            q.id,
+                            "marksPerQuestion",
+                            Math.max(1, q.marksPerQuestion - 1)
+                          )
+                        }
+                        className="text-gray-400 hover:text-black transition-colors"
+                      >
+                        <MinusIcon size={14} weight="bold" />
+                      </button>
+                      <span className="font-semibold text-sm">{q.marksPerQuestion}</span>
+                      <button
+                        onClick={() =>
+                          handleUpdateConfig(q.id, "marksPerQuestion", q.marksPerQuestion + 1)
+                        }
+                        className="text-gray-400 hover:text-black transition-colors"
+                      >
+                        <PlusIcon size={14} weight="bold" />
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeConfig(q.id)}
+                    className="hidden md:flex text-gray-400 hover:text-black transition-colors w-5 justify-center"
                   >
                     <XIcon size={16} weight="bold" />
                   </button>
