@@ -24,7 +24,6 @@ export function useSettings() {
         console.error("Failed to parse settings", e);
       }
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoaded(true);
   }, []);
 

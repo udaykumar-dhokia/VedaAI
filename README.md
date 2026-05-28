@@ -35,6 +35,11 @@ VedaAI is an AI-powered academic system designed for seamless assessment generat
 - **Database**: [MongoDB](https://www.mongodb.com/) (Mongoose)
 - **Security**: Express Rate Limit, JWT Authentication, bcryptjs
 
+### Infrastructure / Deployment
+
+- **Hosting**: AWS EC2 Instance
+- **Process Management**: PM2 (for daemonizing both Frontend and Backend)
+
 ## Architecture Overview
 
 VedaAI follows a modern, scalable client-server architecture with asynchronous background processing for AI tasks:

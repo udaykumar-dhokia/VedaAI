@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -37,6 +37,44 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/custom/header";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/hooks/use-settings";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface ISpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): ISpeechRecognition;
+}
+
+interface CustomWindow extends Window {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+}
 
 export default function CreateAssignmentPage() {
   const router = useRouter();
@@ -49,6 +87,123 @@ export default function CreateAssignmentPage() {
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { settings } = useSettings();
+
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const customWindow = window as unknown as CustomWindow;
+      const SpeechRecognition =
+        customWindow.SpeechRecognition || customWindow.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          let finalTranscript = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalTranscript) {
+            setAdditionalInstructions((prev) => prev + (prev ? " " : "") + finalTranscript);
+          }
+        };
+
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error("Speech recognition error", event.error);
+          if (event.error !== "no-speech") {
+            toast.error("Speech recognition error: " + event.error);
+          }
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const hasSeenCreateTour = localStorage.getItem("veda_create_tour_seen");
+    if (!hasSeenCreateTour) {
+      setTimeout(() => {
+        const driverObj = driver({
+          showProgress: true,
+          allowClose: true,
+          overlayColor: "rgba(0, 0, 0, 0.5)",
+          steps: [
+            {
+              element: "#tour-create-title",
+              popover: {
+                title: "Assignment Details",
+                description: "Start by filling in the fundamental details of your exam paper.",
+                side: "bottom",
+                align: "start",
+              },
+            },
+            {
+              element: "#tour-create-questions",
+              popover: {
+                title: "Customize Questions",
+                description:
+                  "Here you can mix and match different types of questions, change their counts, and set their marks.",
+                side: "top",
+                align: "start",
+              },
+            },
+            {
+              element: "#tour-create-voice",
+              popover: {
+                title: "Voice Dictation",
+                description:
+                  "Tired of typing? You can use your voice to add highly specific instructions for the AI to follow!",
+                side: "left",
+                align: "end",
+              },
+            },
+            {
+              element: "#tour-create-next",
+              popover: {
+                title: "Continue",
+                description:
+                  "When you are ready, click Next to attach files or schedule the assignment.",
+                side: "top",
+                align: "start",
+              },
+            },
+          ],
+          onDestroyStarted: () => {
+            localStorage.setItem("veda_create_tour_seen", "true");
+            driverObj.destroy();
+          },
+        });
+
+        driverObj.drive();
+      }, 1000);
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+        setIsListening(true);
+        toast.success("Listening... Speak your instructions.");
+      } else {
+        toast.error("Speech recognition is not supported in this browser.");
+      }
+    }
+  };
 
   const [questionConfigs, setQuestionConfigs] = useState([
     { id: "1", type: "Multiple Choice Questions", numberQuestions: 4, marksPerQuestion: 1 },
@@ -164,7 +319,7 @@ export default function CreateAssignmentPage() {
           transition={{ duration: 0.3 }}
           className="space-y-8"
         >
-          <div>
+          <div id="tour-create-title">
             <Label className="text-sm font-semibold mb-2 block">Assignment Title</Label>
             <Input
               placeholder="Enter assignment title"
@@ -206,117 +361,120 @@ export default function CreateAssignmentPage() {
             </div>
             <Label className="md:hidden text-sm font-semibold mb-3 block">Question Type</Label>
 
-            {questionConfigs.map((q) => (
-              <div
-                key={q.id}
-                className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-4 md:mb-3 bg-white md:bg-transparent p-4 md:p-0 rounded-2xl md:rounded-none border border-gray-100 md:border-none shadow-sm md:shadow-none"
-              >
-                <div className="flex items-center gap-3 md:flex-1">
-                  <div className="flex-1">
-                    <Select
-                      value={q.type}
-                      onValueChange={(val) => handleUpdateConfig(q.id, "type", val)}
+            <div id="tour-create-questions">
+              {questionConfigs.map((q) => (
+                <div
+                  key={q.id}
+                  className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 mb-4 md:mb-3 bg-white md:bg-transparent p-4 md:p-0 rounded-2xl md:rounded-none border border-gray-100 md:border-none shadow-sm md:shadow-none"
+                >
+                  <div className="flex items-center gap-3 md:flex-1">
+                    <div className="flex-1">
+                      <Select
+                        value={q.type}
+                        onValueChange={(val) => handleUpdateConfig(q.id, "type", val)}
+                      >
+                        <SelectTrigger className="rounded-xl h-11 bg-gray-50 md:bg-white border-gray-200 focus:ring-1 focus:ring-veda shadow-none">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Multiple Choice Questions">
+                            Multiple Choice Questions
+                          </SelectItem>
+                          <SelectItem value="Short Questions">Short Questions</SelectItem>
+                          <SelectItem value="Diagram/Graph-Based Questions">
+                            Diagram/Graph-Based Questions
+                          </SelectItem>
+                          <SelectItem value="Numerical Problems">Numerical Problems</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <button
+                      onClick={() => removeConfig(q.id)}
+                      className="md:hidden text-gray-400 hover:text-black flex items-center justify-center p-2"
                     >
-                      <SelectTrigger className="rounded-xl h-11 bg-gray-50 md:bg-white border-gray-200 focus:ring-1 focus:ring-veda shadow-none">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Multiple Choice Questions">
-                          Multiple Choice Questions
-                        </SelectItem>
-                        <SelectItem value="Short Questions">Short Questions</SelectItem>
-                        <SelectItem value="Diagram/Graph-Based Questions">
-                          Diagram/Graph-Based Questions
-                        </SelectItem>
-                        <SelectItem value="Numerical Problems">Numerical Problems</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <XIcon size={16} weight="bold" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeConfig(q.id)}
-                    className="md:hidden text-gray-400 hover:text-black flex items-center justify-center p-2"
-                  >
-                    <XIcon size={16} weight="bold" />
-                  </button>
-                </div>
 
-                <div className="flex items-center gap-3 justify-between md:justify-start">
-                  <div className="flex-1 md:w-28 flex flex-col gap-1.5">
-                    <span className="md:hidden text-xs font-semibold text-center text-zinc-600">
-                      No. of Questions
-                    </span>
-                    <div className="flex items-center justify-between bg-gray-50 md:bg-white rounded-full px-3 h-11 border border-gray-200 shadow-none">
-                      <button
-                        onClick={() =>
-                          handleUpdateConfig(
-                            q.id,
-                            "numberQuestions",
-                            Math.max(1, q.numberQuestions - 1)
-                          )
-                        }
-                        className="text-gray-400 hover:text-black transition-colors"
-                      >
-                        <MinusIcon size={14} weight="bold" />
-                      </button>
-                      <span className="font-semibold text-sm">{q.numberQuestions}</span>
-                      <button
-                        onClick={() =>
-                          handleUpdateConfig(q.id, "numberQuestions", q.numberQuestions + 1)
-                        }
-                        className="text-gray-400 hover:text-black transition-colors"
-                      >
-                        <PlusIcon size={14} weight="bold" />
-                      </button>
+                  <div className="flex items-center gap-3 justify-between md:justify-start">
+                    <div className="flex-1 md:w-28 flex flex-col gap-1.5">
+                      <span className="md:hidden text-xs font-semibold text-center text-zinc-600">
+                        No. of Questions
+                      </span>
+                      <div className="flex items-center justify-between bg-gray-50 md:bg-white rounded-full px-3 h-11 border border-gray-200 shadow-none">
+                        <button
+                          onClick={() =>
+                            handleUpdateConfig(
+                              q.id,
+                              "numberQuestions",
+                              Math.max(1, q.numberQuestions - 1)
+                            )
+                          }
+                          className="text-gray-400 hover:text-black transition-colors"
+                        >
+                          <MinusIcon size={14} weight="bold" />
+                        </button>
+                        <span className="font-semibold text-sm">{q.numberQuestions}</span>
+                        <button
+                          onClick={() =>
+                            handleUpdateConfig(q.id, "numberQuestions", q.numberQuestions + 1)
+                          }
+                          className="text-gray-400 hover:text-black transition-colors"
+                        >
+                          <PlusIcon size={14} weight="bold" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 md:w-28 flex flex-col gap-1.5">
-                    <span className="md:hidden text-xs font-semibold text-center text-zinc-600">
-                      Marks
-                    </span>
-                    <div className="flex items-center justify-between bg-gray-50 md:bg-white rounded-full px-3 h-11 border border-gray-200 shadow-none">
-                      <button
-                        onClick={() =>
-                          handleUpdateConfig(
-                            q.id,
-                            "marksPerQuestion",
-                            Math.max(1, q.marksPerQuestion - 1)
-                          )
-                        }
-                        className="text-gray-400 hover:text-black transition-colors"
-                      >
-                        <MinusIcon size={14} weight="bold" />
-                      </button>
-                      <span className="font-semibold text-sm">{q.marksPerQuestion}</span>
-                      <button
-                        onClick={() =>
-                          handleUpdateConfig(q.id, "marksPerQuestion", q.marksPerQuestion + 1)
-                        }
-                        className="text-gray-400 hover:text-black transition-colors"
-                      >
-                        <PlusIcon size={14} weight="bold" />
-                      </button>
+                    <div className="flex-1 md:w-28 flex flex-col gap-1.5">
+                      <span className="md:hidden text-xs font-semibold text-center text-zinc-600">
+                        Marks
+                      </span>
+                      <div className="flex items-center justify-between bg-gray-50 md:bg-white rounded-full px-3 h-11 border border-gray-200 shadow-none">
+                        <button
+                          onClick={() =>
+                            handleUpdateConfig(
+                              q.id,
+                              "marksPerQuestion",
+                              Math.max(1, q.marksPerQuestion - 1)
+                            )
+                          }
+                          className="text-gray-400 hover:text-black transition-colors"
+                        >
+                          <MinusIcon size={14} weight="bold" />
+                        </button>
+                        <span className="font-semibold text-sm">{q.marksPerQuestion}</span>
+                        <button
+                          onClick={() =>
+                            handleUpdateConfig(q.id, "marksPerQuestion", q.marksPerQuestion + 1)
+                          }
+                          className="text-gray-400 hover:text-black transition-colors"
+                        >
+                          <PlusIcon size={14} weight="bold" />
+                        </button>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => removeConfig(q.id)}
+                      className="hidden md:flex text-gray-400 hover:text-black transition-colors w-5 justify-center"
+                    >
+                      <XIcon size={16} weight="bold" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeConfig(q.id)}
-                    className="hidden md:flex text-gray-400 hover:text-black transition-colors w-5 justify-center"
-                  >
-                    <XIcon size={16} weight="bold" />
-                  </button>
                 </div>
+              ))}
+
+              <button
+                onClick={addConfig}
+                className="flex items-center gap-2 mt-4 text-sm font-semibold hover:text-black text-gray-800 transition-colors"
+              >
+                <PlusCircleIcon size={20} weight="fill" className="text-zinc-800" /> Add Question
+                Type
+              </button>
+
+              <div className="text-right mt-6 text-sm font-semibold space-y-1">
+                <p>Total Questions : {totalQuestions}</p>
+                <p>Total Marks : {totalMarks}</p>
               </div>
-            ))}
-
-            <button
-              onClick={addConfig}
-              className="flex items-center gap-2 mt-4 text-sm font-semibold hover:text-black text-gray-800 transition-colors"
-            >
-              <PlusCircleIcon size={20} weight="fill" className="text-zinc-800" /> Add Question Type
-            </button>
-
-            <div className="text-right mt-6 text-sm font-semibold space-y-1">
-              <p>Total Questions : {totalQuestions}</p>
-              <p>Total Marks : {totalMarks}</p>
             </div>
           </div>
 
@@ -331,8 +489,18 @@ export default function CreateAssignmentPage() {
                 value={additionalInstructions}
                 onChange={(e) => setAdditionalInstructions(e.target.value)}
               />
-              <button className="absolute bottom-3 right-3 text-gray-500 hover:text-black transition-colors bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
-                <MicrophoneIcon size={18} weight="fill" />
+              <button
+                id="tour-create-voice"
+                onClick={toggleListening}
+                className={cn(
+                  "absolute bottom-3 right-3 p-2 rounded-full shadow-sm border border-gray-100 transition-all",
+                  isListening
+                    ? "bg-red-500 text-white animate-pulse"
+                    : "bg-white text-gray-500 hover:text-black hover:bg-gray-50"
+                )}
+                title={isListening ? "Stop listening" : "Start speaking"}
+              >
+                <MicrophoneIcon size={20} weight={isListening ? "fill" : "regular"} />
               </button>
             </div>
           </div>
@@ -372,15 +540,25 @@ export default function CreateAssignmentPage() {
           </div>
 
           <div>
-            <Label className="text-sm font-semibold mb-2 block">Reference File (Optional)</Label>
-            <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center bg-gray-50/50 hover:bg-gray-50 cursor-pointer transition-colors">
-              <CloudArrowUpIcon size={28} className="mb-2 text-foreground" />
-              <p className="font-semibold text-sm">Choose a file or drag & drop it here</p>
-              <p className="text-xs text-muted-foreground mb-4">JPEG, PNG, upto 10MB</p>
+            <div className="flex items-center gap-2 mb-2">
+              <Label className="text-sm font-semibold block">Reference File</Label>
+              <span className="bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+                Coming Soon
+              </span>
+            </div>
+            <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 flex flex-col items-center justify-center text-center bg-gray-50/50 opacity-60 cursor-not-allowed">
+              <CloudArrowUpIcon size={28} className="mb-2 text-muted-foreground" />
+              <p className="font-semibold text-sm text-muted-foreground">
+                Upload feature is under development
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                You will soon be able to upload PDF or image references.
+              </p>
               <Button
                 variant="secondary"
                 size="sm"
-                className="rounded-full bg-gray-100 hover:bg-gray-200 text-foreground font-medium px-4"
+                disabled
+                className="rounded-full bg-gray-100 text-foreground font-medium px-4 opacity-50"
               >
                 Browse Files
               </Button>
@@ -595,6 +773,7 @@ export default function CreateAssignmentPage() {
 
           {step < 3 ? (
             <Button
+              id="tour-create-next"
               className="rounded-full px-8 bg-zinc-900 text-white hover:bg-zinc-800 h-11"
               onClick={() => {
                 if (step === 1) handleNextToStep2();

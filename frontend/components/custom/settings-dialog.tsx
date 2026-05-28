@@ -47,7 +47,6 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     if (isLoaded) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setApiKey(settings.llmApiKey);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setModel(settings.llmModelName);
     }
   }, [settings, isLoaded, open]);
